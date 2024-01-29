@@ -315,16 +315,16 @@ const FormComponent = () => {
               </Button>
             )}
             {currentStep < steps.length - 1 && (
-              // <Button variant="contained" type="submit"  color="primary">
-              //   Next
-              // </Button>
-              <Button
-                variant="contained"
-                onClick={() => setCurrentStep(currentStep + 1)}
-                color="primary"
-              >
+              <Button variant="contained" type="submit"  color="primary">
                 Next
               </Button>
+              // <Button
+              //   variant="contained"
+              //   onClick={() => setCurrentStep(currentStep + 1)}
+              //   color="primary"
+              // >
+              //   Next
+              // </Button>
             )}
             {currentStep === steps.length - 1 && (
               <Button type="submit" variant="contained" color="primary">
