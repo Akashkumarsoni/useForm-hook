@@ -101,6 +101,9 @@ const FormComponent = () => {
 
   return (
     <Container component="main" maxWidth="md">
+      <Typography component="h1" variant="h3" align="center" sx={{ padding: 4 }}>
+        Registration Form
+      </Typography>
       <Paper elevation={3} style={{ padding: "20px", marginTop: "20px" }}>
         <Stepper activeStep={currentStep} style={{ marginTop: "20px" }}>
           {steps.map((label) => (

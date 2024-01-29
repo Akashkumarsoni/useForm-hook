@@ -1,4 +1,4 @@
-import { Card } from "@mui/material";
+import { Card, Typography } from "@mui/material";
 import DataTables from "datatables.net";
 import { useSelector } from "react-redux";
 
@@ -11,6 +11,9 @@ const Datatable = () => {
     <>
       {listOfUser.length > 0 && (
         <Card sx={{ padding: 2, marginTop: 5 }}>
+          <Typography component="h1" variant="h3" align="center" sx={{ padding: 4 }}>
+            List of Register Users
+          </Typography>
           <table id="myTable" className="table table-bordered">
             <thead>
               <tr>
@@ -32,7 +35,9 @@ const Datatable = () => {
                   <tr>
                     <td>{lst.name}</td>
                     <td>{`${lst.age} / ${lst.gender}`}</td>
-                    <td>{lst.idType} / {lst.idNumber}</td>
+                    <td>
+                      {lst.idType} / {lst.idNumber}
+                    </td>
                     <td>{address}</td>
                   </tr>
                 );
