@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
-import * as Yup from 'yup';
+import React, { useEffect, useState } from "react";
+import { useForm, Controller } from "react-hook-form";
+import * as Yup from "yup";
 import {
   Button,
   TextField,
@@ -12,77 +12,104 @@ import {
   Step,
   StepLabel,
   MenuItem,
-} from '@mui/material';
-import Datatable from './Datatable';
-import { userDetailsSchemaForStep1,userDetailsSchemaForStep2 } from '../Schemas/userDetailsSchema';
-import { useDispatch } from 'react-redux';
+  Autocomplete,
+} from "@mui/material";
+import Datatable from "./Datatable";
+import {
+  userDetailsSchemaForStep1,
+  userDetailsSchemaForStep2,
+} from "../Schemas/userDetailsSchema";
+import { useDispatch } from "react-redux";
+import { useDebounce } from "../Hooks/useDebounce";
 
 const initialValues = {
-    name: "",
-    mobile: "",
-    age: "",
-    gender: "",
-    idType:"",
-    idNumber:"",
-    address:"",
-    city:"",
-    state:"",
-    zip:"",
-    country:""
-  };
+  name: "",
+  mobile: "",
+  age: "",
+  gender: "",
+  idType: "",
+  idNumber: "",
+  address: "",
+  city: "",
+  state: "",
+  zip: "",
+  country: "",
+};
 const FormComponent = () => {
-  const [currentStep,setCurrentStep] = useState(0);
-  const [error,setError] = useState(initialValues);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [error, setError] = useState(initialValues);
+  const [countryOptions, setCountryOptions] = useState<any[]>([]);
+  const [searchText, setSearchText] = useState<string>("");
   const dispatch = useDispatch();
-  const {
-    control,
-    handleSubmit,
-  } = useForm({
+  const { control, handleSubmit, setValue } = useForm({
     defaultValues: initialValues,
   });
-  const onSubmit = async (data:any) => {
+  const onSubmit = async (data: any) => {
     try {
-        if(currentStep == 0) {
-            await userDetailsSchemaForStep1.validate(data, { abortEarly: false });
-            setCurrentStep(currentStep+1);
-        }
-        else {
-            await userDetailsSchemaForStep2.validate(data, { abortEarly: false });
-            dispatch({ type: "add_user", payload: data })
-        }
-        setError(initialValues);
-        
-      } catch (validationErrors:any) {
-        const formattedErrors = validationErrors.inner.reduce((acc:any, err:any) => {
-          acc[err.path] = err.message;
-          return acc;
-        }, {});
-        setError({...initialValues,...formattedErrors});
+      if (currentStep === 0) {
+        await userDetailsSchemaForStep1.validate(data, { abortEarly: false });
+        setCurrentStep(currentStep + 1);
+      } else {
+        await userDetailsSchemaForStep2.validate(data, { abortEarly: false });
+        dispatch({ type: "add_user", payload: data });
       }
-    
+      setError(initialValues);
+    } catch (validationErrors: any) {
+      const formattedErrors = validationErrors.inner.reduce((acc: any, err: any) => {
+        acc[err.path] = err.message;
+        return acc;
+      }, {});
+      setError({ ...initialValues, ...formattedErrors });
+    }
   };
   const handleBack = () => {
-    setCurrentStep(currentStep-1)
+    setCurrentStep(currentStep - 1);
   };
-  const steps = ["Personal Details",'Address Details'];
-  const genderOptions = ['Male', 'Female', 'Other'];
-  const idTypeOptions = ['Aadhar Card', 'PAN Card'];
-  const countries = ['India','USA', 'Canada', 'UK', 'Australia', 'Germany', 'France', 'Japan'];
+  const handleAutoComplete = (e: any) => {
+    setValue("country", e.target.textContent);
+  };
+  const countryName = (url: string, name: string) => {
+    url = url + name;
+    fetch(url)
+      .then((res: any) => res.json())
+      .then((res: any) => {
+        if (res?.length > 0) {
+          const tempOptions: any = [];
+          res?.forEach((data: any) => {
+            tempOptions.push({ label: data.name.common, id: data.name.common });
+          });
+          setCountryOptions(tempOptions);
+        }
+      });
+  };
+  const searchtext: any = useDebounce(searchText, 500);
+  const allListURL = "https://restcountries.com/v3.1/all";
+  const searchedURL = `https://restcountries.com/v3.1/name/`;
+  useEffect(() => {
+    if (searchtext === "") {
+      countryName(allListURL, "");
+    } else {
+      countryName(searchedURL, searchtext);
+    }
+  }, [searchtext]);
+  const steps = ["Personal Details", "Address Details"];
+  const genderOptions = ["Male", "Female", "Other"];
+  const idTypeOptions = ["Aadhar Card", "PAN Card"];
 
   return (
     <Container component="main" maxWidth="md">
-      <Paper elevation={3} style={{ padding: '20px', marginTop: '20px' }}>
-      <Stepper activeStep={currentStep} style={{ marginTop: '20px' }}>
+      <Paper elevation={3} style={{ padding: "20px", marginTop: "20px" }}>
+        <Stepper activeStep={currentStep} style={{ marginTop: "20px" }}>
           {steps.map((label) => (
             <Step key={label}>
               <StepLabel>{label}</StepLabel>
             </Step>
           ))}
         </Stepper>
-        <Typography component="h1" variant="h5" align="center" sx={{padding:4}}>
+        <Typography component="h1" variant="h5" align="center" sx={{ padding: 4 }}>
           {steps[currentStep]}
         </Typography>
-        
+
         <form onSubmit={handleSubmit(onSubmit)}>
           <Grid container spacing={2}>
             {/* Page 1 fields */}
@@ -126,7 +153,7 @@ const FormComponent = () => {
                     control={control}
                     render={({ field }) => (
                       <TextField
-                      sx={{textAlign:'left'}}
+                        sx={{ textAlign: "left" }}
                         {...field}
                         label="Gender"
                         select
@@ -166,7 +193,7 @@ const FormComponent = () => {
                     control={control}
                     render={({ field }) => (
                       <TextField
-                      sx={{textAlign:'left'}}
+                        sx={{ textAlign: "left" }}
                         {...field}
                         label="Govt Issued Id Name"
                         select
@@ -211,45 +238,27 @@ const FormComponent = () => {
                     name="address"
                     control={control}
                     render={({ field }) => (
-                      <TextField
-                        {...field}
-                        label="Address"
-                        variant="outlined"
-                        fullWidth
-                      />
+                      <TextField {...field} label="Address" variant="outlined" fullWidth />
                     )}
                   />
-                  
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <Controller
                     name="city"
                     control={control}
                     render={({ field }) => (
-                      <TextField
-                        {...field}
-                        label="City"
-                        variant="outlined"
-                        fullWidth
-                      />
+                      <TextField {...field} label="City" variant="outlined" fullWidth />
                     )}
                   />
-                  
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <Controller
                     name="state"
                     control={control}
                     render={({ field }) => (
-                      <TextField
-                        {...field}
-                        label="State"
-                        variant="outlined"
-                        fullWidth
-                      />
+                      <TextField {...field} label="State" variant="outlined" fullWidth />
                     )}
                   />
-                  
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <Controller
@@ -263,31 +272,29 @@ const FormComponent = () => {
                         fullWidth
                         error={error.zip.length > 6}
                         helperText={error.zip}
-                        type='number'
+                        type="number"
                       />
                     )}
                   />
-                  
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <Controller
                     name="country"
                     control={control}
                     render={({ field }) => (
-                      <TextField
-                      sx={{textAlign:'left'}}
+                      <Autocomplete
                         {...field}
-                        label="Country"
-                        select
-                        variant="outlined"
-                        fullWidth
-                      >
-                        {countries.map((option) => (
-                          <MenuItem key={option} value={option}>
-                            {option}
-                          </MenuItem>
-                        ))}
-                      </TextField>
+                        freeSolo
+                        options={countryOptions}
+                        onChange={handleAutoComplete}
+                        renderInput={(params) => (
+                          <TextField
+                            onChange={(e) => setSearchText(e.target.value)}
+                            {...params}
+                            label="Country"
+                          />
+                        )}
+                      />
                     )}
                   />
                 </Grid>
@@ -296,14 +303,26 @@ const FormComponent = () => {
           </Grid>
 
           {/* Navigation buttons */}
-          <Grid container justifyContent="flex-end" style={{ marginTop: '20px' }}>
+          <Grid container justifyContent="flex-end" style={{ marginTop: "20px" }}>
             {currentStep > 0 && (
-              <Button variant="contained" color="primary" onClick={handleBack} style={{ marginRight: '10px' }}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleBack}
+                style={{ marginRight: "10px" }}
+              >
                 Back
               </Button>
             )}
             {currentStep < steps.length - 1 && (
-              <Button variant="contained" type="submit"  color="primary">
+              // <Button variant="contained" type="submit"  color="primary">
+              //   Next
+              // </Button>
+              <Button
+                variant="contained"
+                onClick={() => setCurrentStep(currentStep + 1)}
+                color="primary"
+              >
                 Next
               </Button>
             )}

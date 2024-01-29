@@ -9,7 +9,13 @@ export const userDetailsSchemaForStep1 = Yup.object({
   age: Yup.number().required('Age is required').positive('Age must be a positive number'),
   gender: Yup.string().min(2).max(25).required("Please select your gender"),
   idType:Yup.string().required("Please select your ID Type"),
-  idNumber:Yup.string().min(10).max(12).required("Please enter your ID Number"),
+  // idNumber:Yup.string().min(10).max(12).required("Please enter your ID Number"),
+});
+export const aadharValidation = Yup.object({
+  idNumber: Yup.string().min(12).max(12).required("Please enter your Aadhar Number"),
+});
+export const panValidation = Yup.object({
+  idNumber: Yup.string().min(10).max(10).required("Please enter your PAN Number"),
 });
 export const userDetailsSchemaForStep2 = Yup.object({
   zip:Yup.string().min(6).max(6)
