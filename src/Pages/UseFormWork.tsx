@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
-import * as Yup from "yup";
 import {
   Button,
   TextField,
@@ -41,7 +40,7 @@ const FormComponent = () => {
   const [countryOptions, setCountryOptions] = useState<any[]>([]);
   const [searchText, setSearchText] = useState<string>("");
   const dispatch = useDispatch();
-  const { control, handleSubmit, setValue } = useForm({
+  const { control, handleSubmit,getValues, setValue } = useForm({
     defaultValues: initialValues,
   });
   const onSubmit = async (data: any) => {
@@ -52,6 +51,10 @@ const FormComponent = () => {
       } else {
         await userDetailsSchemaForStep2.validate(data, { abortEarly: false });
         dispatch({ type: "add_user", payload: data });
+        setCurrentStep(0);
+        Object.keys(initialValues).forEach((keys:any)=>{
+          setValue(keys,"");
+        })
       }
       setError(initialValues);
     } catch (validationErrors: any) {
@@ -315,16 +318,9 @@ const FormComponent = () => {
               </Button>
             )}
             {currentStep < steps.length - 1 && (
-              <Button variant="contained" type="submit"  color="primary">
+              <Button variant="contained" type="submit" color="primary">
                 Next
               </Button>
-              // <Button
-              //   variant="contained"
-              //   onClick={() => setCurrentStep(currentStep + 1)}
-              //   color="primary"
-              // >
-              //   Next
-              // </Button>
             )}
             {currentStep === steps.length - 1 && (
               <Button type="submit" variant="contained" color="primary">

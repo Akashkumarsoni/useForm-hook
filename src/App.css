@@ -48,5 +48,6 @@ th, td {
 }
 
 th {
-  background-color: lightgreen;
+  background-color: #1976D2;
+  color:white
 }
